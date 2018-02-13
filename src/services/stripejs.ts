@@ -1,5 +1,3 @@
-import { Injectable, Inject } from '@angular/core';
-
 import { Observable } from 'rxjs/Observable';
 
 import { WindowRef } from './window-ref';
@@ -31,15 +29,14 @@ import {
   isPiiData
 } from '../interfaces/token';
 
-@Injectable()
-export class StripeService {
+export class Stripe {
   private stripe: StripeJS;
 
   constructor(
-    @Inject(STRIPE_PUBLISHABLE_KEY) private key: string,
-    @Inject(STRIPE_OPTIONS) private options: string,
     private loader: LazyStripeAPILoader,
-    private window: WindowRef
+    private window: WindowRef,
+    private key: string,
+    private options?: string
   ) {
     this.stripeObject().subscribe((Stripe: any) => {
       this.stripe = this.options
@@ -50,20 +47,6 @@ export class StripeService {
 
   public elements(options?: ElementsOptions): Observable<Elements> {
     return this.stripeObject().map(() => this.stripe.elements(options));
-  }
-
-  public changeKey(key: string, options?: string): Observable<StripeJS> {
-    const obs = this.stripeObject()
-      .map((Stripe: any) => {
-        this.stripe = options
-          ? (Stripe(key, options) as StripeJS)
-          : (Stripe(key) as StripeJS);
-        return this.stripe;
-      })
-      .publishLast()
-      .refCount();
-    obs.subscribe();
-    return obs;
   }
 
   public createToken(
